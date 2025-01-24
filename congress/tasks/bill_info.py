@@ -165,7 +165,7 @@ def sponsor_for(sponsor_dict):
         return None
 
     # TODO: Don't do regex matching here. Find another way.
-    m = re.match(r'(?P<title>(Rep\.|Sen\.|Del\.|Resident Commissioner)) (?P<name>.*?) +\[(?P<party>[DRIL])-(?P<state>[A-Z][A-Z])(-(?P<district>\d{1,2}|At Large|None))?\]$',
+    m = re.match(r'(?P<title>(Rep\.|Sen\.|Del\.|Resident Commissioner|Rescom\.)) (?P<name>.*?) +\[(?P<party>[DRIL])-(?P<state>[A-Z][A-Z])(-(?P<district>\d{1,2}|At Large|None))?\]$',
         sponsor_dict['fullName'])
 
     if not m:
@@ -189,12 +189,14 @@ def summary_for(summaries):
     # Take the most recent summary, by looking at the lexicographically last updateDate.
     summary = sorted(summaries, key = lambda s: s['updateDate'])[-1]
 
+    text = summary.get('text', '')
+
     # Build dict.
     return {
         "date": summary['updateDate'],
         "as": summary['actionDesc'],
         "asOf": summary['actionDate'],
-        "text": strip_tags(summary['text']),
+        "text": strip_tags(text),
     }
 
 def strip_tags(text):
@@ -234,7 +236,7 @@ def committees_for(committee_list):
             name)
 
     def get_activitiy_list(item):
-        if not item['activities']:
+        if not item.get('activities'):
             return []
         return sum([activity_text_map.get(i['name'], [i['name']]) for i in item['activities']['item']], [])
 
@@ -392,7 +394,7 @@ def actions_for(action_list, bill_id, title):
         "prev": None,
     }
     def keep_action(item, closure):
-        if item['text'] in (None, ""):
+        if not item.get('text'):
             return False
 
         keep = True
@@ -536,7 +538,7 @@ def cosponsors_for(cosponsors_list):
         del cosponsor_dict["type"] # always 'person'
         cosponsor_dict.update({
             'sponsored_at': item['sponsorshipDate'],
-            # 'withdrawn_at': item['sponsorshipWithdrawnDate'], # no longer present in GPO BILLSTATUS XML schema 3.0.0?
+            'withdrawn_at': item.get('sponsorshipWithdrawnDate'),
             'original_cosponsor': item['isOriginalCosponsor'] == 'True'
         })
         return cosponsor_dict
@@ -863,18 +865,17 @@ def parse_bill_action(action_dict, prev_status, bill_id, title):
             bill_item = bill_item.lower().replace(".", "").replace(" ", "").split(",")
             if bill_item[0] == (bill_type + number):
                 as_amended = len(bill_item) > 1
-        if as_amended is None: raise ValueError("Did not find bill in list: " + line)
-
-        vote_type = "vote" if (bill_type[0] == "h") else "vote2"
-        pass_fail = "pass"
-        action["type"] = "vote"
-        action["vote_type"] = vote_type
-        action["how"] = "by special rule"
-        action["where"] = "h"
-        action["result"] = pass_fail
-        new_status = new_status_after_vote(vote_type, pass_fail == "pass", "h", bill_type, False, as_amended, title, prev_status)
-        if new_status:
-            status = new_status
+        if as_amended is not None: # found the bill in the list?
+            vote_type = "vote" if (bill_type[0] == "h") else "vote2"
+            pass_fail = "pass"
+            action["type"] = "vote"
+            action["vote_type"] = vote_type
+            action["how"] = "by special rule"
+            action["where"] = "h"
+            action["result"] = pass_fail
+            new_status = new_status_after_vote(vote_type, pass_fail == "pass", "h", bill_type, False, as_amended, title, prev_status)
+            if new_status:
+                status = new_status
 
     # House motions to table adversely dispose of a pending matter, if agreed to. An agreed-to "motion to table the measure",
     # which is very infrequent, kills the legislation. If not agreed to, nothing changes. So this regex only captures
