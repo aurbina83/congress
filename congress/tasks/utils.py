@@ -39,7 +39,11 @@ else:
 eastern_time_zone = timezone("US/Eastern")
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
-scraper = scrapelib.Scraper(requests_per_minute=1500, retry_attempts=3)
+scraper = scrapelib.Scraper(
+    requests_per_minute=0,
+    retry_attempts=20,
+    retry_wait_seconds=0.1,
+)
 scraper.user_agent = "unitedstates/congress (https://github.com/unitedstates/congress)"
 
 
