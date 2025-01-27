@@ -499,11 +499,10 @@ def extract_package_files(
             try:
                 with package.open(package_path) as f1:
                     with open(local_path, "wb") as f2:
+                        f2.write(f1.read())
                         cb = options.get("callback", None)
                         if cb and callable(cb):
-                            cb(f1.read())
-                            f1.seek(0)
-                        f2.write(f1.read())
+                            cb(local_path)
             except KeyError:
                 # No file of this format is present in this package.
                 continue

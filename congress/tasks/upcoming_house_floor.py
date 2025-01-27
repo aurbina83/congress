@@ -61,11 +61,11 @@ def run_for_week(for_the_week, options):
     output = json.dumps(
         house_floor, sort_keys=True, indent=2, default=utils.format_datetime
     )
+
+    utils.write(output, output_file)
     cb = options.get("callback", None)
     if cb and callable(cb):
-        cb(output)
-    utils.write(output, output_file)
-
+        cb(output_file)
     logging.warn(
         "Found %i bills for the week of %s, written to %s"
         % (len(house_floor["upcoming"]), for_the_week, output_file)

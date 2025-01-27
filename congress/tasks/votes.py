@@ -96,8 +96,14 @@ def vote_ids_for_house(congress, session_year, options):
     )
 
     # download index page, find the matching links to the paged listing of votes
+    download_options = options.copy()
+    if options.get("fast", False):
+        download_options["force"] = True  # Force fresh download when using --fast
+
     page = utils.download(
-        index_page, "%s/votes/%s/pages/house.html" % (congress, session_year), options
+        index_page,
+        "%s/votes/%s/pages/house.html" % (congress, session_year),
+        download_options,
     )
 
     if not page:
@@ -153,10 +159,15 @@ def vote_ids_for_senate(congress, session_year, options):
         "https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_%s_%d.xml"
         % (congress, session_num)
     )
+
+    download_options = options.copy()
+    if options.get("fast", False):
+        download_options["force"] = True  # Force fresh download when using --fast
+
     page = utils.download(
         url,
         "%s/votes/%s/pages/senate.xml" % (congress, session_year),
-        utils.merge(options, {"binary": True}),
+        utils.merge(download_options, {"binary": True}),
     )
 
     if not page or b"Requested Page Not Found (404)" in page:

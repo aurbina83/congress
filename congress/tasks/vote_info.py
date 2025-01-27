@@ -98,10 +98,11 @@ def output_vote(vote, options, id_type=None):
 
     # output JSON - so easy!
     data = json.dumps(vote, sort_keys=True, indent=2, default=utils.format_datetime)
+    destination = output_for_vote(vote["vote_id"], "json")
+    utils.write(data, output_for_vote(vote["vote_id"], "json"), options=options)
     cb = options.get("callback", None)
     if cb and callable(cb):
-        cb(data)
-    utils.write(data, output_for_vote(vote["vote_id"], "json"), options=options)
+        cb(destination)
 
     # What kind of IDs are we passed for Members of Congress?
     # For current data, we infer from the chamber. For historical data from voteview,

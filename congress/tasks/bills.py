@@ -154,15 +154,16 @@ def process_bill(bill_id, options):
             "saved": False,
             "reason": bill_data,
         }
-    cb = options.get("callback", None)
-    if cb and callable(cb):
-        cb(bill_data)
     # Convert and write out data.json and data.xml.
+    destination = os.path.dirname(fdsys_xml_path) + "/data.json"
     utils.write(
         json.dumps(bill_data, indent=2, sort_keys=True),
-        os.path.dirname(fdsys_xml_path) + "/data.json",
+        destination,
         {"diff": options.get("diff")},
     )
+    cb = options.get("callback", None)
+    if cb and callable(cb):
+        cb(destination)
 
     from congress.tasks.bill_info import create_govtrack_xml
 

@@ -11,7 +11,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setuptools.setup(
     name="pb-congress-scraper",
-    version="0.0.4",
+    version="0.0.5",
     author="The unitedstates organization on GitHub",
     long_description=long_description,
     description="Public domain data collectors for the work of Congress, "
