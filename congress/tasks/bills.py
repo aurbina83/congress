@@ -238,7 +238,7 @@ def form_bill_json_dict(xml_as_dict):
         actions, bill_dict.get("introducedDate", "")
     )
 
-    if bill_dict["sponsors"] is None and bill_dict["titles"]["item"][0][
+    if bill_dict.get("sponsors") is None and bill_dict["titles"]["item"][0][
         "title"
     ].startswith("Reserved "):
         logging.info(
@@ -247,7 +247,9 @@ def form_bill_json_dict(xml_as_dict):
         )
         return bill_dict["titles"]["item"][0]["title"]  # becomes the 'reason'
 
-    if schema_version >= parse_version("3.0.0"):
+    if bill_dict.get("sponsors") is None:
+        by_request = False
+    elif schema_version >= parse_version("3.0.0"):
         by_request = bill_dict["sponsors"]["item"][0]["isByRequest"] == "Y"
     else:
         by_request = bill_dict["sponsors"]["item"][0]["byRequestType"] is not None
@@ -282,7 +284,11 @@ def form_bill_json_dict(xml_as_dict):
         "url": billstatus_url_for(bill_id),
         "introduced_at": bill_dict.get("introducedDate", ""),
         "by_request": by_request,
-        "sponsor": bill_info.sponsor_for(bill_dict["sponsors"]["item"][0]),
+        "sponsor": (
+            bill_info.sponsor_for(bill_dict["sponsors"]["item"][0])
+            if bill_dict.get("sponsors")
+            else None
+        ),
         "cosponsors": bill_info.cosponsors_for(bill_dict.get("cosponsors")),
         "actions": actions,
         "history": bill_info.history_from_actions(actions),
