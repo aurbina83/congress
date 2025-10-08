@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pb-congress-scraper"
-version = "0.0.7"
+version = "0.0.8"
 description = "Public domain data collectors for the work of Congress, including legislation, amendments, and votes."
 authors = ["The unitedstates organization on GitHub"]
 readme = "README.md"
